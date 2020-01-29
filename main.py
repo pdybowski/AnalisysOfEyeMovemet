@@ -159,19 +159,19 @@ def hough_for_canny(circles):
     return x_est, y_est
 
 #hough transform using 2 value image and estimate two points using their sum
-def hough_transform_2_pixels(threshold):
+def hough_transform_2_pixels(threshold_gauss):
     #x_est
-    sum_hough_tranfsorm = np.sum(threshold, axis=0)
+    sum_hough_tranfsorm = np.sum(threshold_gauss, axis=0)
     x0, = np.where(sum_hough_tranfsorm[:] == min(sum_hough_tranfsorm))
     x_est = min(x0)
     #y_est
-    sum_hough_tranfsorm = np.sum(threshold, axis=1)
+    sum_hough_tranfsorm = np.sum(threshold_gauss, axis=1)
     y0, = np.where(sum_hough_tranfsorm[:] == min(sum_hough_tranfsorm))
     y_est = min(y0)
 
-    threshold = cv2.cvtColor(threshold, cv2.COLOR_GRAY2RGB)
+    threshold_gauss = cv2.cvtColor(threshold_gauss, cv2.COLOR_GRAY2RGB)
     
-    return threshold, x_est, y_est
+    return threshold_gauss, x_est, y_est
 
 def drawing_lines(threshold_gauss, coeff_x, coeff_y, margin_x, margin_y ):
     for i in range(0, 5):
