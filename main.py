@@ -121,13 +121,12 @@ def main():
             circles = cv2.HoughCircles(threshold_gauss, cv2.HOUGH_GRADIENT, 2.0, 2, param1=40, param2=25, minRadius=50, maxRadius=60)
         else:
             circles = cv2.HoughCircles(threshold_gauss, cv2.HOUGH_GRADIENT, 2.0, 2, param1=40, param2=25, minRadius=30, maxRadius=50)
-   
+        
         if circles is None or len(circles[0, :, 0]) < 1:
             threshold_gauss, x_est, y_est = hough_transform_2_pixels(threshold_gauss)
         else:
             x_est, y_est = hough_for_canny(circles)
             threshold_gauss = cv2.cvtColor(threshold_gauss, cv2.COLOR_GRAY2RGB)
-
             for i in circles[0, :]:
                 cv2.circle(image, (i[0], i[1]), 2, (0, 0, 255), 2)
                 cv2.circle(threshold_gauss, (i[0], i[1]), 2, (0, 0, 255), 2)
@@ -174,6 +173,7 @@ def hough_transform_2_pixels(threshold_gauss):
     return threshold_gauss, x_est, y_est
 
 def drawing_lines(threshold_gauss, coeff_x, coeff_y, margin_x, margin_y ):
+
     for i in range(0, 5):
         x_1 = int((FRAME_HEIGHT * coeff_x[i])) + int(margin_x)
         y_1 = int((FRAME_WIDTH * coeff_y[i])) + int(margin_y)
@@ -185,7 +185,6 @@ def drawing_lines(threshold_gauss, coeff_x, coeff_y, margin_x, margin_y ):
     x_2 = int((FRAME_HEIGHT * coeff_x[5])) + int(margin_x)
     y_2 = int((FRAME_WIDTH * coeff_y[5])) + int(margin_y)
     cv2.line(threshold_gauss, (x_1, y_1), (x_2, y_2), (0, 255, 0), 1)
-
     return threshold_gauss
 
 main()

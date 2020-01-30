@@ -1,19 +1,18 @@
 from utils.constants import ALFA_MIN, ALFA_MAX, FRAME_HEIGHT, FRAME_WIDTH
-import cv2 
+import cv2
+import numpy as np
+
 def first_threshold(gauss):
     _, threshold_gauss = cv2.threshold(gauss, ALFA_MIN, ALFA_MAX, cv2.THRESH_BINARY)
-    
-    b_pix = 0
-    sum_pix = 0
 
     for k in range(0, 100):
         b_pix = 0
         sum_pix = 0
-        for i in range(len(threshold_gauss[0, :])):     # x
-            for j in range(len(threshold_gauss[:, 0])):  # y
-                if threshold_gauss[j, i] == 0:
-                    b_pix += 1
-                sum_pix += 1
+        
+        arr = threshold_gauss[0:len(threshold_gauss[:, 0]),0:len(threshold_gauss[0, :])]
+        b_pix = np.count_nonzero(arr == 0)
+        sum_pix = len(threshold_gauss[0, :])*len(threshold_gauss[:, 0])
+
         if (b_pix/sum_pix > 0.2 and b_pix/sum_pix < 0.3):
             return threshold_gauss
         elif (b_pix/sum_pix < 0.2):
@@ -78,44 +77,24 @@ def delete_pixels_right(threshold_gauss, x_points, y_points, gauss):
     top_border = int(y_points[1]) - 15
     bottom_border = int(y_points[5]) + 15
 
-    pixels = 0
-    for i in range(0, FRAME_HEIGHT):     # x
-        for j in range(0, FRAME_WIDTH):  # y
-            if threshold_gauss[j, i] == 0:
-                pixels += 1
-
+    for k in range(0, 100):
+        b_pix = 0
+        sum_pix = 0
+        
+        arr = threshold_gauss[top_border:bottom_border, left_border:right_border]
+        b_pix = np.count_nonzero(arr == 0)
+        sum_pix = (right_border-left_border)*(bottom_border-top_border)
+        
+        if (b_pix/sum_pix < 0.5):
+            break
+        else: 
+            _, threshold_gauss = cv2.threshold(gauss, ALFA_MIN - k, ALFA_MAX, cv2.THRESH_BINARY)
+    
     threshold_gauss[:, 0:left_border] = 255
     threshold_gauss[:, right_border:threshold_gauss.shape[1]] = 255
     threshold_gauss[0:top_border, :] = 255
     threshold_gauss[bottom_border:threshold_gauss.shape[0], :] = 255
 
-    for k in range(0, 100):
-        b_pix = 0
-        sum_pix = 0
-        for i in range(left_border, right_border):     # x
-            for j in range(top_border, bottom_border):  # y
-                if threshold_gauss[j, i] == 0:
-                    b_pix += 1
-                sum_pix += 1
-        if (b_pix/sum_pix < 0.5):
-            break
-        else: 
-            _, threshold_gauss = cv2.threshold(gauss, ALFA_MIN - k, ALFA_MAX, cv2.THRESH_BINARY)
-
-    b_pix = 0
-    sum_pix = 0
-    for i in range(left_border, right_border):     # x
-        for j in range(top_border, bottom_border):  # y
-            if threshold_gauss[j, i] == 0:
-                b_pix += 1
-            sum_pix += 1
-        
-    pixels = 0
-    for i in range(0, FRAME_HEIGHT):     # x
-        for j in range(0, FRAME_WIDTH):  # y
-            if threshold_gauss[j, i] == 0:
-                pixels += 1
-    
     return threshold_gauss
 
 def delete_pixels_center(threshold_gauss, x_points, y_points, gauss):
@@ -123,32 +102,19 @@ def delete_pixels_center(threshold_gauss, x_points, y_points, gauss):
     left_border = int(x_points[1]) - 5
     top_border = int(y_points[2]) - 15
     bottom_border = int(y_points[4]) + 15
-
-    pixels = 0
-    for i in range(0, FRAME_HEIGHT):     # x
-        for j in range(0, FRAME_WIDTH):  # y
-            if threshold_gauss[j, i] == 0:
-                pixels += 1
-
+    
     for k in range(0, 100):
         b_pix = 0
         sum_pix = 0
-        for i in range(left_border, right_border):     # x
-            for j in range(top_border, bottom_border):  # y
-                if threshold_gauss[j, i] == 0:
-                    b_pix += 1
-                sum_pix += 1
+
+        arr = threshold_gauss[top_border:bottom_border, left_border:right_border]
+        b_pix = np.count_nonzero(arr == 0)
+        sum_pix = (right_border-left_border)*(bottom_border-top_border)
+        
         if (b_pix/sum_pix < 0.8):
             break
         else: 
             _, threshold_gauss = cv2.threshold(gauss, ALFA_MIN - k, ALFA_MAX, cv2.THRESH_BINARY) 
-
-
-    pixels = 0
-    for i in range(left_border, right_border):     # x
-        for j in range(top_border, bottom_border):  # y
-            if threshold_gauss[j, i] == 0:
-                pixels += 1
 
     threshold_gauss[:, 0:left_border] = 255   #[y, x]
     threshold_gauss[:, right_border:threshold_gauss.shape[1]] = 255
@@ -156,7 +122,6 @@ def delete_pixels_center(threshold_gauss, x_points, y_points, gauss):
     threshold_gauss[bottom_border:threshold_gauss.shape[0], :] = 255
 
     return threshold_gauss
-
 
 # to do - NOT USED
 def delete_pixels_bottom(threshold_gauss, x_points, y_points, gauss):
